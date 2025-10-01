@@ -5,7 +5,6 @@ import axios from "axios";
 
 let URI= import.meta.env.VITE_BACKEND  
 let HF_TOKEN= import.meta.env.VITE_TOKEN
-console.log('huihuihuhuh',HF_TOKEN)
 
 // console.log(URI)
 
