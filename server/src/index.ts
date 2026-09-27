@@ -29,7 +29,7 @@ if (!CLIENT_URL) {
 |--------------------------------------------------------------------------
 */
 
-await app.register(cors, {
+app.register(cors, {
   origin: CLIENT_URL,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "X-Proxy-Secret"],
@@ -41,7 +41,7 @@ await app.register(cors, {
 |--------------------------------------------------------------------------
 */
 
-await app.register(fastifyFormbody);
+app.register(fastifyFormbody);
 
 /*
 |--------------------------------------------------------------------------
@@ -60,13 +60,9 @@ app.get("/", async (_request, reply) => {
 |--------------------------------------------------------------------------
 | Proxy authentication
 |--------------------------------------------------------------------------
-|
-| Every /api request must contain the secret supplied by Cloudflare.
-|
 */
 
 app.addHook("onRequest", async (request, reply) => {
-  // Only protect API routes
   if (!request.url.startsWith("/api")) {
     return;
   }
@@ -90,13 +86,6 @@ app.addHook("onRequest", async (request, reply) => {
     });
   }
 
-  /*
-   * Constant-time comparison.
-   *
-   * For a simple shared secret this is already much better than
-   * accepting an unauthenticated public endpoint.
-   */
-
   if (providedSecret !== PROXY_SECRET) {
     request.log.warn(
       {
@@ -118,7 +107,7 @@ app.addHook("onRequest", async (request, reply) => {
 |--------------------------------------------------------------------------
 */
 
-await app.register(apiRoute, {
+app.register(apiRoute, {
   prefix: "/api",
 });
 
@@ -148,14 +137,18 @@ app.setNotFoundHandler((request, reply) => {
 |--------------------------------------------------------------------------
 */
 
-try {
-  await app.listen({
-    port: PORT,
-    host: "0.0.0.0",
-  });
+async function start() {
+  try {
+    await app.listen({
+      port: PORT,
+      host: "0.0.0.0",
+    });
 
-  console.log(`🚀 Server running on port ${PORT}`);
-} catch (error) {
-  app.log.error(error);
-  process.exit(1);
+    console.log(`🚀 Server running on port ${PORT}`);
+  } catch (error) {
+    app.log.error(error);
+    process.exit(1);
+  }
 }
+
+start();
