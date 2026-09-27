@@ -39,6 +39,9 @@ app.get('/', async (request, reply) => {
 app.register(apiRoute, { prefix: '/api' });
 
 app.setNotFoundHandler((request, reply) => {
+  // Add this line to force Fastify to print unmatched incoming requests:
+  console.log(`[HF BACKEND RECEIVED] Unmatched route: ${request.method} ${request.url}`);
+  
   reply.status(404).send({ error: 'Not Found' });
 });
 
