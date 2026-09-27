@@ -11,7 +11,6 @@ let HF_TOKEN= import.meta.env.VITE_TOKEN
 export const api = axios.create({baseURL: URI,
     headers: {
         accept: "application/json",
-        Authorization: HF_TOKEN ? `Bearer ${HF_TOKEN}` : "",
     }
 })
 
