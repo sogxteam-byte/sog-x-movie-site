@@ -7,18 +7,33 @@ import { apiRoute } from './routes/v1Route.js';
 dotenv.config();
 
 const app = Fastify({ logger: true });
+const PORT = Number(process.env.PORT) || 7860;
 
-const PORT = Number(process.env.PORT) || 3000;
-
+// Enable CORS
 app.register(cors, {
-  origin: process.env.CLIENT_URL // 🔐 Replace with your real domain
+  origin: process.env.CLIENT_URL || true,
 });
 
 app.register(fastifyFormbody);
 
+// Security Middleware: Block requests that bypass Cloudflare Worker
+app.addHook('onRequest', async (request, reply) => {
+  // Allow health check endpoint to pass without secret
+  if (request.url === '/health' || request.url === '/') {
+    return;
+  }
+
+  const proxySecret = request.headers['x-proxy-secret'];
+  const expectedSecret = process.env.PROXY_SECRET;
+
+  if (expectedSecret && proxySecret !== expectedSecret) {
+    reply.status(403).send({ error: 'Access denied: Direct access to backend is restricted.' });
+  }
+});
+
 app.get('/', async (request, reply) => {
   reply.type('application/json').code(200);
-  return { hello: 'world' };
+  return { status: 'online', message: 'Movie API Server Running' };
 });
 
 app.register(apiRoute, { prefix: '/api' });
