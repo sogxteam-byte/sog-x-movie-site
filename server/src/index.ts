@@ -9,40 +9,26 @@ dotenv.config();
 const app = Fastify({ logger: true });
 const PORT = Number(process.env.PORT) || 7860;
 
-// Enable CORS
+// Enable CORS allowing your Cloudflare Worker / Client
 app.register(cors, {
   origin: process.env.CLIENT_URL || true,
 });
 
 app.register(fastifyFormbody);
 
-// Security Middleware: Block requests that bypass Cloudflare Worker
-app.addHook('onRequest', async (request, reply) => {
-  // Allow health check endpoint to pass without secret
-  if (request.url === '/health' || request.url === '/') {
-    return;
-  }
-
-  const proxySecret = request.headers['x-proxy-secret'];
-  const expectedSecret = process.env.PROXY_SECRET;
-
-  if (expectedSecret && proxySecret !== expectedSecret) {
-    reply.status(403).send({ error: 'Access denied: Direct access to backend is restricted.' });
-  }
-});
-
+// Root health check endpoint
 app.get('/', async (request, reply) => {
   reply.type('application/json').code(200);
   return { status: 'online', message: 'Movie API Server Running' };
 });
 
+// Register API routes
 app.register(apiRoute, { prefix: '/api' });
 
+// Catch-all 404 handler with logging so you see unmatched requests in Hugging Face logs
 app.setNotFoundHandler((request, reply) => {
-  // Add this line to force Fastify to print unmatched incoming requests:
-  console.log(`[HF BACKEND RECEIVED] Unmatched route: ${request.method} ${request.url}`);
-  
-  reply.status(404).send({ error: 'Not Found' });
+  console.log(`[HF BACKEND 404] Route not found: ${request.method} ${request.url}`);
+  reply.status(404).send({ error: `Route ${request.method} ${request.url} not found` });
 });
 
 app.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
