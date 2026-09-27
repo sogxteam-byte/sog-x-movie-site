@@ -2,7 +2,7 @@
 
 A full-stack movie discovery app. Browse, search, and view details/trailers for movies, powered by [TMDB](https://www.themoviedb.org/). Built as a monorepo with a React frontend and a Fastify API backend, deployed independently.
 
-- **Live app:** [sog-x-movie-site-mhpu.vercel.app](https://soflix.sogx.top)
+- **Live app:** [https://soflix.sogx.top](https://soflix.sogx.top)
 - **API:** deployed as a Docker container on Hugging Face Spaces
 
 ## ✨ Features
